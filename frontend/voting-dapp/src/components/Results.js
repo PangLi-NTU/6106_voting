@@ -1,23 +1,33 @@
 import React, { useState } from "react";
-import { ethers } from "ethers";
+import { BrowserProvider, Contract, parseUnits } from "ethers";
 import VotingSystemABI from "../contracts/VotingSystemABI.json";
-import { REACT_APP_VOTING_CONTRACT } from "../config";
+import config from "../config";
 
-const Results = () => {
-    const [winner, setWinner] = useState("");
+const Results = ({ userAddress }) => {
+    const [optionId, setOptionId] = useState("");
+    const [amount, setAmount] = useState("");
 
-    const getWinner = async () => {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const contract = new ethers.Contract(REACT_APP_VOTING_CONTRACT, VotingSystemABI, provider);
+    const vote = async () => {
+        if (!userAddress) return alert("请先连接 MetaMask");
 
-        const [winningOption, votes] = await contract.getWinner();
-        setWinner(`当前领先者: ${winningOption}（${votes} 票）`);
+        const provider = new BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new Contract(config.VOTING_CONTRACT_ADDRESS, VotingSystemABI, signer);
+
+        try {
+            const tx = await contract.vote(optionId, parseUnits(amount, 18));
+            await tx.wait();
+            alert("投票成功！");
+        } catch (error) {
+            console.error("投票失败", error);
+        }
     };
 
     return (
         <div>
-            <button onClick={getWinner}>获取投票结果</button>
-            <p>{winner}</p>
+            <input type="text" value={optionId} onChange={(e) => setOptionId(e.target.value)} placeholder="选项 ID" />
+            <input type="text" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="投票数 (代币数)" />
+            <button onClick={vote}>提交投票</button>
         </div>
     );
 };
