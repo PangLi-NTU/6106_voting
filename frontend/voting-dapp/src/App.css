@@ -1,38 +1,102 @@
+/* 让整个页面更清晰居中 */
 .App {
-  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+body {
+  background: linear-gradient(135deg, #FCC89B 0%, #FF5FA2 100%);
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
   min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.App {
+  min-height: 100vh; /* 让整个页面都填充颜色 */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  background: linear-gradient(135deg, rgba(247, 243, 197, 0.6) 0%, rgba(254, 214, 227, 0.6) 100%); /* 设置透明度 */
+  padding: 20px;
+  border-radius: 10px;
+}
+
+
+/* 连接钱包样式 */
+.wallet-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 投票选项卡片 */
+.voting-card {
+  background-color: #ffffff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.voting-card:hover {
+  transform: scale(1.02);
+}
+
+/* 标题样式 */
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+/* 投票按钮 */
+.vote-button {
+  background-color: #007bff;
   color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease-in-out;
 }
 
-.App-link {
-  color: #61dafb;
+.vote-button:hover {
+  background-color: #0056b3;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* 授权按钮 */
+.approve-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease-in-out;
+}
+
+.approve-button:hover {
+  background-color: #218838;
+}
+
+/* 输入框 */
+input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 8px;
 }

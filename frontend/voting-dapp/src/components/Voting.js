@@ -1,61 +1,95 @@
-import React, { useState, useEffect } from "react";
-import { BrowserProvider, Contract, parseUnits } from "ethers"; // ✅ 直接导入 parseUnits
-import VotingSystemABI from "../contracts/VotingSystemABI.json";
-import config from "../config";
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
 
-const Voting = ({ userAddress }) => {
-    const [optionId, setOptionId] = useState("");
-    const [amount, setAmount] = useState("");
+const Voting = ({ contract, userAddress, tokenAddress }) => {
+    const [options, setOptions] = useState([]);
+    const [purpose, setPurpose] = useState("");
+    const [amount, setAmount] = useState(0);
 
     useEffect(() => {
-        const loadContract = async () => {
-            if (!window.ethereum) return alert("请安装 MetaMask 以继续！");
-            
-            const provider = new BrowserProvider(window.ethereum);
-            const signer = await provider.getSigner();
-            const contract = new Contract(config.VOTING_CONTRACT_ADDRESS, VotingSystemABI, signer);
+        if (!contract) return;
 
-            console.log("📌 合约加载成功:", contract);
+        const fetchPurposeAndOptions = async () => {
+            try {
+                const purposeText = await contract.getPurpose();
+                setPurpose(purposeText);
+                const count = await contract.optionsCount();
+                let optionsArray = [];
+                for (let i = 0; i < count; i++) {
+                    const option = await contract.options(i);
+                    optionsArray.push({ name: option.name, voteCount: (await contract.getOption(i)).voteCount.toString(), id: i });
+                }
+                setOptions(optionsArray);
+            } catch (error) {
+                console.error("❌ 加载投票信息失败:", error);
+            }
         };
 
-        loadContract();
-    }, []);
+        fetchPurposeAndOptions();
+    }, [contract]);
 
-    const vote = async () => {
-        if (!userAddress) return alert("请先连接 MetaMask");
-        if (!optionId || !amount) return alert("⚠️ 请输入有效的选项 ID 和投票数！");
+    // **🔥 解决问题: 发送交易需要 Signer**
+    const getSigner = async () => {
+        if (!window.ethereum) {
+            console.error("❌ MetaMask 未安装");
+            return null;
+        }
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        return await provider.getSigner();
+    };
 
+    // **🔥 1️⃣ 先批准 MTK 代币**
+    const approveToken = async () => {
         try {
-            const provider = new BrowserProvider(window.ethereum);
-            const signer = await provider.getSigner();
-            const contract = new Contract(config.VOTING_CONTRACT_ADDRESS, VotingSystemABI, signer);
+            const signer = await getSigner();
+            if (!signer) return;
 
-            const tx = await contract.vote(optionId, parseUnits(amount, 18)); // ✅ 直接使用 parseUnits
+            const tokenContract = new ethers.Contract(tokenAddress, [
+                "function approve(address spender, uint256 amount) external returns (bool)"
+            ], signer);
+
+            const tx = await tokenContract.approve(contract.target, ethers.parseUnits(amount.toString(), 18));
             await tx.wait();
-            alert("🎉 投票成功！");
-            setOptionId("");
-            setAmount("");
+            alert("✅ 授权成功！");
         } catch (error) {
-            console.error("投票失败", error);
-            alert("投票失败，请检查钱包是否有足够的余额或 Gas 费");
+            console.error("❌ 授权失败:", error);
+        }
+    };
+
+    // **🔥 2️⃣ 进行投票**
+    const vote = async (optionId) => {
+        try {
+            const signer = await getSigner();
+            if (!signer) return;
+
+            const contractWithSigner = contract.connect(signer);
+
+            const tx = await contractWithSigner.vote(optionId, ethers.parseUnits(amount.toString(), 18));
+            await tx.wait();
+            alert("✅ 投票成功！");
+        } catch (error) {
+            console.error("❌ 投票失败:", error);
         }
     };
 
     return (
         <div>
+            <h2>📜 <b>{purpose}</b></h2>
             <input
-                type="text"
-                value={optionId}
-                onChange={(e) => setOptionId(e.target.value)}
-                placeholder="请输入选项 ID"
-            />
-            <input
-                type="text"
+                type="number"
+                placeholder="输入投票代币数量"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="请输入投票数 (代币数)"
             />
-            <button onClick={vote}>🗳️ 提交投票</button>
+            <button onClick={approveToken}>🔓 授权代币</button>
+            <ul>
+                {options.map((option, index) => (
+                    <li key={index}>
+                        {option.name} - 票数: {ethers.formatUnits(option.voteCount, 18)}
+                        <button onClick={() => vote(option.id)}>🗳️ 投票</button>
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 };

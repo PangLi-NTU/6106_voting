@@ -24,7 +24,7 @@ const Results = () => {
 
     return (
         <div>
-            <h2>🗳️ 投票主题: {votingPurpose || "加载中..."}</h2>
+            <h2>🗳️ 投票主题: {votingPurpose || "Who is the cutest ? "}</h2>
         </div>
     );
 };

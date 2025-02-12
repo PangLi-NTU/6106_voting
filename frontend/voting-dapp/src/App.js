@@ -1,39 +1,47 @@
-import React, { useState } from "react";
+import './App.css';
+import React, { useState, useEffect } from "react";
 import ConnectWallet from "./components/ConnectWallet";
-import Register from "./components/Register";
-import Approve from "./components/Approve";
 import Voting from "./components/Voting";
-import Results from "./components/Results";
-import config from "./config";  // ✅ 统一管理合约地址
-import "./App.css";
+import { ethers } from "ethers";
+import config from "./config";
+import VotingSystemABI from "./contracts/VotingSystemABI.json";
 
 const App = () => {
-  const [userAddress, setUserAddress] = useState("");
+    const [userAddress, setUserAddress] = useState("");
+    const [votingContracts, setVotingContracts] = useState([]);
+    const [provider, setProvider] = useState(null);
 
-  console.log("Voting Contract Address:", config.VOTING_CONTRACT_ADDRESS);
-  console.log("Token Contract Address:", config.TOKEN_CONTRACT_ADDRESS);
-  console.log("Infura API:", config.INFURA_API);
+    useEffect(() => {
+        if (window.ethereum) {
+            const newProvider = new ethers.BrowserProvider(window.ethereum);
+            setProvider(newProvider);
+        }
+    }, []);
 
-  return (
-    <div className="App">
-      <h1>基于 ERC20 代币的投票系统</h1>
-      
-      {/* 连接钱包 */}
-      <ConnectWallet setUserAddress={setUserAddress} />
+    useEffect(() => {
+        const contractAddresses = [config.VOTING_CONTRACT_ADDRESS_1, config.VOTING_CONTRACT_ADDRESS_2, config.VOTING_CONTRACT_ADDRESS_3];
+        const loadContracts = async () => {
+            if (provider) {
+                const contracts = contractAddresses.map(address => new ethers.Contract(address, VotingSystemABI, provider));
+                setVotingContracts(contracts);
+            }
+        };
+        loadContracts();
+    }, [provider]);
 
-      {/* 注册并领取代币 */}
-      {userAddress && <Register contractAddress={config.VOTING_CONTRACT_ADDRESS} userAddress={userAddress} />}
-
-      {/* 代币授权 */}
-      {userAddress && <Approve tokenAddress={config.TOKEN_CONTRACT_ADDRESS} votingContractAddress={config.VOTING_CONTRACT_ADDRESS} />}
-
-      {/* 投票 */}
-      {userAddress && <Voting contractAddress={config.VOTING_CONTRACT_ADDRESS} userAddress={userAddress} />}
-
-      {/* 显示投票结果 */}
-      {userAddress && <Results contractAddress={config.VOTING_CONTRACT_ADDRESS} />}
-    </div>
-  );
+    return (
+        <div className="App">
+            <h1>🗳️ 基于 ERC20 代币的投票系统</h1>
+            <ConnectWallet setUserAddress={setUserAddress} />
+            {userAddress && votingContracts.length > 0 ? (
+                votingContracts.map((contract, index) => (
+                    <Voting key={index} contract={contract} userAddress={userAddress} tokenAddress={config.TOKEN_CONTRACT_ADDRESS} />
+                ))
+            ) : (
+                <p>⏳ 正在加载投票数据...</p>
+            )}
+        </div>
+    );
 };
 
 export default App;
