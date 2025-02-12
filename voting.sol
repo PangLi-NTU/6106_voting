@@ -6,7 +6,10 @@ interface IERC20 {
     function transfer(address recipient, uint256 amount) external returns (bool);
     function approve(address spender, uint256 amount) external returns (bool);
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
     function mint(address to, uint256 amount) external;
+    function decimals() external view returns (uint8);
+
 }
 
 contract VotingSystem {
@@ -17,12 +20,16 @@ contract VotingSystem {
 
     address public admin;
     IERC20 public votingToken; // ERC-20 代币地址
+    address tokenAddress;
+    string votingPurpose;
     mapping(uint256 => Option) public options;
     mapping(address => bool) public hasVoted; // 记录是否投过票
     mapping(address => uint256) public votes; // 记录谁投给了谁
     uint256 public optionsCount;
     uint256 public votingDeadline; // 投票截止时间
     mapping(address => bool) public registeredUsers; // 记录已注册用户
+    uint256 public initAmount;
+    address contractAddress; // 获取地址
 
     event OptionAdded(uint256 optionId, string name);
     // event Voted(uint256 optionId, address voter);
@@ -39,10 +46,16 @@ contract VotingSystem {
         _;
     }
 
-    constructor(address _tokenAddress, uint256 durationInMinutes) {
+    constructor(address _tokenAddress, uint256 durationInMinutes, string memory _votingPurpose) {
+        require(bytes(_votingPurpose).length > 0, "_VotingPurpose name cannot be empty");
         admin = msg.sender;
+        votingPurpose = _votingPurpose;
+        tokenAddress = _tokenAddress;
+        contractAddress = address(this); 
         votingToken = IERC20(_tokenAddress);
         votingDeadline = block.timestamp + (durationInMinutes * 1 minutes);
+        initAmount = 20*10**votingToken.decimals();        
+        require(votingToken.balanceOf(msg.sender) >= 15*10**votingToken.decimals(), "Insufficient tokens");
     }
 
     // 用户注册后，自动获得 20 ERC-20 代币
@@ -51,6 +64,7 @@ contract VotingSystem {
 
         registeredUsers[msg.sender] = true;
         votingToken.mint(msg.sender, 20 * 10**18);
+        //votingToken.transferFrom(admin, msg.sender, initAmount);
 
         emit UserRegistered(msg.sender, 20 * 10**18);
     }
@@ -62,12 +76,30 @@ contract VotingSystem {
         optionsCount++;
     }
 
+    // function vote(uint256 optionId, uint256 amount) public votingActive {
+    //     require(optionId < optionsCount, "Invalid option ID");
+    //     require(!hasVoted[msg.sender], "You have already voted");
+    //     require(votingToken.balanceOf(msg.sender) >= amount, "Insufficient tokens");
+
+    //     // 用户必须先 `approve()` 让投票合约使用他们的代币
+    //     votingToken.transferFrom(msg.sender, address(this), amount);
+
+    //     options[optionId].voteCount += amount;
+    //     hasVoted[msg.sender] = true;
+
+    //     emit Voted(optionId, msg.sender, amount);
+    // }
+
     function vote(uint256 optionId, uint256 amount) public votingActive {
         require(optionId < optionsCount, "Invalid option ID");
         require(!hasVoted[msg.sender], "You have already voted");
         require(votingToken.balanceOf(msg.sender) >= amount, "Insufficient tokens");
+        
+        // votingToken.approve(address(this), amount);
+        // 自动检查授权
+        uint256 allowance = votingToken.allowance(msg.sender, address(this));
+        require(allowance >= amount, "Insufficient allowance, please approve first.");
 
-        // 用户必须先 `approve()` 让投票合约使用他们的代币
         votingToken.transferFrom(msg.sender, address(this), amount);
 
         options[optionId].voteCount += amount;
@@ -75,6 +107,7 @@ contract VotingSystem {
 
         emit Voted(optionId, msg.sender, amount);
     }
+
 
     function getOption(uint256 optionId) public view returns (string memory name, uint256 voteCount) {
         require(optionId < optionsCount, "Invalid option ID");
@@ -108,5 +141,9 @@ contract VotingSystem {
         }
 
         return (options[winningOptionId].name, winningVoteCount);
+    }
+
+    function getPurpose() external view returns (string memory purpose) {
+        return votingPurpose;
     }
 }
