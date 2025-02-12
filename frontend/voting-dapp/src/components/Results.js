@@ -1,33 +1,30 @@
-import React, { useState } from "react";
-import { BrowserProvider, Contract, parseUnits } from "ethers";
+import React, { useState, useEffect } from "react";
+import { BrowserProvider, Contract } from "ethers";
 import VotingSystemABI from "../contracts/VotingSystemABI.json";
-import config from "../config";
+import config from "../config"; // 读取合约地址
 
-const Results = ({ userAddress }) => {
-    const [optionId, setOptionId] = useState("");
-    const [amount, setAmount] = useState("");
+const Results = () => {
+    const [votingPurpose, setVotingPurpose] = useState("");
 
-    const vote = async () => {
-        if (!userAddress) return alert("请先连接 MetaMask");
+    useEffect(() => {
+        const fetchVotingPurpose = async () => {
+            try {
+                const provider = new BrowserProvider(window.ethereum);
+                const signer = await provider.getSigner();
+                const contract = new Contract(config.VOTING_CONTRACT_ADDRESS, VotingSystemABI, signer);
 
-        const provider = new BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const contract = new Contract(config.VOTING_CONTRACT_ADDRESS, VotingSystemABI, signer);
-
-        try {
-            const tx = await contract.vote(optionId, parseUnits(amount, 18));
-            await tx.wait();
-            alert("投票成功！");
-        } catch (error) {
-            console.error("投票失败", error);
-        }
-    };
+                const purpose = await contract.getPurpose();
+                setVotingPurpose(purpose);
+            } catch (error) {
+                console.error("获取投票目的失败", error);
+            }
+        };
+        fetchVotingPurpose();
+    }, []);
 
     return (
         <div>
-            <input type="text" value={optionId} onChange={(e) => setOptionId(e.target.value)} placeholder="选项 ID" />
-            <input type="text" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="投票数 (代币数)" />
-            <button onClick={vote}>提交投票</button>
+            <h2>🗳️ 投票主题: {votingPurpose || "加载中..."}</h2>
         </div>
     );
 };

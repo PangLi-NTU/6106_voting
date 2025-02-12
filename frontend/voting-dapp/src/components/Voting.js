@@ -1,35 +1,38 @@
-import React, { useState } from "react";
-import { BrowserProvider, Contract, parseUnits } from "ethers";
-import config from "../config"; // 从 config.js 读取投票合约地址
+import React, { useState, useEffect } from "react";
+import { BrowserProvider, Contract, parseUnits } from "ethers"; // ✅ 直接导入 parseUnits
 import VotingSystemABI from "../contracts/VotingSystemABI.json";
+import config from "../config";
 
 const Voting = ({ userAddress }) => {
     const [optionId, setOptionId] = useState("");
     const [amount, setAmount] = useState("");
 
-    // 处理投票逻辑
+    useEffect(() => {
+        const loadContract = async () => {
+            if (!window.ethereum) return alert("请安装 MetaMask 以继续！");
+            
+            const provider = new BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new Contract(config.VOTING_CONTRACT_ADDRESS, VotingSystemABI, signer);
+
+            console.log("📌 合约加载成功:", contract);
+        };
+
+        loadContract();
+    }, []);
+
     const vote = async () => {
-        if (!window.ethereum) {
-            return alert("请安装 MetaMask 以继续！");
-        }
-        if (!userAddress) {
-            return alert("请先连接 MetaMask");
-        }
-        if (!optionId || !amount) {
-            return alert("⚠️ 请输入有效的选项 ID 和投票数！");
-        }
+        if (!userAddress) return alert("请先连接 MetaMask");
+        if (!optionId || !amount) return alert("⚠️ 请输入有效的选项 ID 和投票数！");
 
         try {
             const provider = new BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
             const contract = new Contract(config.VOTING_CONTRACT_ADDRESS, VotingSystemABI, signer);
 
-            // 解析代币数量，防止 BigInt 兼容性问题
-            const tx = await contract.vote(optionId, parseUnits(amount, 18).toString());
+            const tx = await contract.vote(optionId, parseUnits(amount, 18)); // ✅ 直接使用 parseUnits
             await tx.wait();
             alert("🎉 投票成功！");
-
-            // 清空输入框
             setOptionId("");
             setAmount("");
         } catch (error) {
