@@ -1,0 +1,36 @@
+.voting-list-container {
+    text-align: left;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.voting-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.voting-card {
+    background-color: rgba(255, 255, 255, 0.1); /* 透明背景 */
+    padding: 15px;
+    border-radius: 10px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.voting-card:hover {
+    transform: scale(1.05);
+}
+
+.vote-button {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    background-color: #ff6b6b;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.vote-button:hover {
+    background-color: #ff4c4c;
+}

@@ -1,0 +1,32 @@
+.vote-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+}
+
+.vote-option {
+
+    border-radius: 10px;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.vote-options:hover {
+    background-color: #ff8c94;
+    border-color: #ff5e63;
+    color: white;
+}
+
+.vote-icon {
+    font-size: 24px;
+}

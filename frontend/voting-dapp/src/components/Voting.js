@@ -52,18 +52,18 @@ const Voting = ({ contract, userAddress, tokenAddress }) => {
     // Only admin can add options
     const addNewOption = async () => {
         if (!isAdmin || !newOption) return;
-    
+
         try {
             const signer = await getSigner(); // Get MetaMask signer
             if (!signer) {
                 console.error("❌ Failed to obtain signer");
                 return;
             }
-    
+
             const contractWithSigner = contract.connect(signer); // Connect contract instance to signer
             const tx = await contractWithSigner.addOption(newOption);
             console.log("✅ Transaction sent:", tx);
-    
+
             await tx.wait();
             alert("✅ Option added successfully!");
             setNewOption("");  // Clear input field
@@ -79,7 +79,7 @@ const Voting = ({ contract, userAddress, tokenAddress }) => {
             alert("⚠️ Please install the MetaMask extension!");
             return null;
         }
-    
+
         try {
             await window.ethereum.request({ method: "eth_requestAccounts" });
             const provider = new ethers.BrowserProvider(window.ethereum);
@@ -96,31 +96,31 @@ const Voting = ({ contract, userAddress, tokenAddress }) => {
         try {
             const signer = await getSigner();
             if (!signer) return;
-    
+
             const tokenContract = new ethers.Contract(tokenAddress, [
                 "function approve(address spender, uint256 amount) external returns (bool)"
             ], signer);
-    
+
             const formattedAmount = ethers.parseUnits(amount.toString(), 18);
-    
+
             // Get contract address
             const contractAddress = contract.target || contract.address;
-    
+
             if (!contractAddress) {
                 console.error("❌ Contract address is empty, unable to execute approval!");
                 alert("❌ Contract address is empty, please check the contract instance!");
                 return;
             }
-    
+
             console.log(`🟢 Attempting to approve ${amount} MTK (actual value: ${formattedAmount}) to ${contractAddress}`);
-    
+
             const tx = await tokenContract.approve(contractAddress, formattedAmount);
             console.log("✅ Approval transaction sent:", tx);
-    
+
             await tx.wait();
             console.log("✅ Approval successful, transaction confirmed!");
             alert("✅ Approval successful!");
-    
+
             setIsApproved(true);
         } catch (error) {
             console.error("❌ Approval failed:", error);
@@ -151,7 +151,7 @@ const Voting = ({ contract, userAddress, tokenAddress }) => {
     return (
         <div className="voting-container">
             <h2>📜 <b>{purpose}</b></h2>
-            
+
             {/* Only Admin can access */}
             {isAdmin && (
                 <div className="admin-panel">
@@ -165,7 +165,7 @@ const Voting = ({ contract, userAddress, tokenAddress }) => {
                     <button onClick={addNewOption}>➕ Add Option</button>
                 </div>
             )}
-            
+
             <input
                 type="number"
                 placeholder="Enter voting token amount"
@@ -175,14 +175,16 @@ const Voting = ({ contract, userAddress, tokenAddress }) => {
             <button onClick={approveToken}>🔓 Approve Tokens</button>
             {isApproved && <p>✅ Approval successful, you can now vote!</p>}
 
-            <ul>
+            <ul className="voting-options">
                 {options.map((option, index) => (
                     <li key={index}>
                         {option.name} - Votes: {option.voteCount}
-                        <button onClick={() => vote(option.id)}>🗳️ Vote</button>
+                        <button className="voting-option" onClick={() => vote(option.id)}>🗳️ Vote</button>
                     </li>
                 ))}
             </ul>
+
+
         </div>
     );
 };

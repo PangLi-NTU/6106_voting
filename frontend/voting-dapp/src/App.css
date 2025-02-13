@@ -1,6 +1,6 @@
 /* 让整个页面更清晰居中 */
 .App {
-  max-width: 800px;
+  max-width: 1500px;
   margin: 0 auto;
   font-family: 'Arial', sans-serif;
 }
@@ -42,7 +42,7 @@ body {
 }
 
 /* 投票选项卡片 */
-.voting-card {
+/* .voting-card {
   background-color: #ffffff;
   padding: 15px;
   border-radius: 10px;
@@ -53,7 +53,7 @@ body {
 
 .voting-card:hover {
   transform: scale(1.02);
-}
+} */
 
 /* 标题样式 */
 h1 {
@@ -62,7 +62,7 @@ h1 {
 }
 
 /* 投票按钮 */
-.vote-button {
+/* .vote-button {
   background-color: #007bff;
   color: white;
   border: none;
@@ -75,7 +75,7 @@ h1 {
 
 .vote-button:hover {
   background-color: #0056b3;
-}
+} */
 
 /* 授权按钮 */
 .approve-button {
@@ -115,4 +115,71 @@ input {
 
 .register-btn:hover {
   background-color: #ee429e;
+}
+
+/* 🌟 页面容器 */
+/* .voting-container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+} */
+.voting-container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);  /* 透明背景 */
+  border-radius: 10px;
+  box-shadow: none;  /* 取消阴影 */
+}
+
+/* 🌟 网格布局 */
+.voting-grid {
+  display: flex;
+  flex-direction: column;  /* 纵向排列 */
+  align-items: flex-start;  /* 左对齐 */
+  gap: 15px;  /* 保持间距 */
+}
+
+/* 🌟 投票卡片 */
+/* .voting-card {
+  width: 250px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+} */
+.voting-card {
+  width: 300px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.3); /* 透明度调整 */
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+}
+
+/* 🖱️ 悬停时变色 */
+.voting-card:hover {
+  background: #ffe0e0;
+  transform: translateY(-5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 🎯 投票按钮 */
+.vote-button {
+  padding: 10px 15px;
+  background: #ff6f61;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+/* 🖱️ 悬停时按钮变色 */
+.vote-button:hover {
+  background: #ff3b2f;
 }

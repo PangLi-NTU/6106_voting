@@ -1,12 +1,11 @@
-import "./App.css";
+import './App.css';
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import ConnectWallet from "./components/ConnectWallet";
-import VotingList from "./components/VotingList";
-import VotingDetail from "./components/VotingDetail";
+import Voting from "./components/Voting";
 import { ethers } from "ethers";
 import VotingSystemABI from "./contracts/VotingSystemABI.json";
 
+// 读取 .env 配置
 const VOTING_CONTRACTS = [
     process.env.REACT_APP_VOTING_CONTRACT_ADDRESS_1,
     process.env.REACT_APP_VOTING_CONTRACT_ADDRESS_2,
@@ -18,11 +17,10 @@ const TOKEN_CONTRACT_ADDRESS = process.env.REACT_APP_TOKEN_CONTRACT_ADDRESS;
 const App = () => {
     const [userAddress, setUserAddress] = useState("");
     const [votingContracts, setVotingContracts] = useState([]);
-    const [registered, setRegistered] = useState(false); // 用户是否已注册
     const [provider, setProvider] = useState(null);
     const [signer, setSigner] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [votingPurposes, setVotingPurposes] = useState([]); // 存储投票目的
+    const [registered, setRegistered] = useState(false); // 用户是否已注册
+    const [loading, setLoading] = useState(true); // 处理加载状态
     const [admin, setAdmin] = useState(null);
 
     // 初始化 Provider
@@ -48,7 +46,7 @@ const App = () => {
                         return new ethers.Contract(address, VotingSystemABI, signer);
                     });
                     setVotingContracts(contracts);
-                    setLoading(false);
+                    setLoading(false); // 数据加载完成
                 } catch (error) {
                     console.error("❌ Failed to load contract:", error);
                     setLoading(false);
@@ -58,30 +56,21 @@ const App = () => {
         loadContracts();
     }, [provider]);
 
-    // ✅ 加载投票目的（Voting Purpose）
     useEffect(() => {
-        const loadVotingPurposes = async () => {
-            if (!provider) return; // 确保 provider 存在
-            const signer = await provider.getSigner();
-
-            let purposes = [];
-            for (const address of VOTING_CONTRACTS) {
-                const contract = new ethers.Contract(address, VotingSystemABI, signer);
+        const fetchAdmin = async () => {
+            if (votingContracts.length > 0) {
                 try {
-                    const purpose = await contract.getPurpose(); // 获取投票目的
-                    purposes.push({ address, purpose });
+                    const adminAddress = await votingContracts[0].admin(); // 获取管理员地址
+                    setAdmin(adminAddress);
+                    console.log("🔹 Contract administrator:", adminAddress);
                 } catch (error) {
-                    console.error(`❌ Failed to load voting purpose from ${address}:`, error);
-                    purposes.push({ address, purpose: "Unknown" });
+                    console.error("❌ Failed to obtain administrator:", error);
                 }
             }
-            setVotingPurposes(purposes);
         };
 
-        if (votingContracts.length > 0) {
-            loadVotingPurposes();
-        }
-    }, [votingContracts]); // 依赖 `votingContracts`，等它加载完成
+        fetchAdmin();
+    }, [votingContracts]); 
 
     // 检查用户是否已注册
     useEffect(() => {
@@ -96,7 +85,7 @@ const App = () => {
             }
         };
         checkRegistration();
-    }, [votingContracts, userAddress]);    
+    }, [votingContracts, userAddress]);
 
     // 用户注册
     const registerUser = async () => {
@@ -116,27 +105,35 @@ const App = () => {
     };
 
     return (
-        <Router>
-            <div className="App">
-                <h1>🗳️ Voting system based on ERC-20 tokens</h1>
-                <ConnectWallet setUserAddress={setUserAddress} />
+        <div className="App">
+            <h1>🗳️ Voting system based on ERC-20 tokens</h1>
+            {/* 显示管理员地址 */}
+            {admin && <p>🔑 Contract administrator: {admin}</p>}
 
-                {/* 显示注册按钮（如果未注册） */}
-                {!registered && userAddress && (
-                    <button onClick={registerUser} className="register-btn">📜 Register and claim 20 tokens</button>
-                )}
+            {/* 连接钱包 */}
+            <ConnectWallet setUserAddress={setUserAddress} />
 
-                <Routes>
-                    {/* ✅ 主页传递 votingPurposes */}
-                    <Route path="/" element={<VotingList contracts={votingContracts} purposes={votingPurposes} />} />
+            {/* 显示注册按钮（如果未注册） */}
+            {!registered && userAddress && (
+                <button onClick={registerUser} className="register-btn">📜 Register and claim 20 tokens</button>
+            )}
 
-                    {/* 投票详情页 */}
-                    <Route path="/vote/:id" element={
-                        <VotingDetail contracts={votingContracts} userAddress={userAddress} tokenAddress={TOKEN_CONTRACT_ADDRESS} />
-                    } />
-                </Routes>
-            </div>
-        </Router>
+            {/* 显示投票合约 */}
+            {loading ? (
+                <p>⏳ Loading voting data...</p>
+            ) : userAddress && votingContracts.length > 0 ? (
+                votingContracts.map((contract, index) => (
+                    <Voting
+                        key={index}
+                        contract={contract}
+                        userAddress={userAddress}
+                        tokenAddress={TOKEN_CONTRACT_ADDRESS}
+                    />
+                ))
+            ) : (
+                <p>⚠️ Failed to load the voting contract. Please check the network and contract address</p>
+            )}
+        </div>
     );
 };
 
