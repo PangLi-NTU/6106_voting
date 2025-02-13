@@ -100,3 +100,19 @@ input {
   border-radius: 4px;
   margin-right: 8px;
 }
+
+.register-btn {
+  background-color: #ff69b4;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background 0.3s ease-in-out;
+}
+
+.register-btn:hover {
+  background-color: #ff1493;
+}
