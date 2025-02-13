@@ -21,7 +21,7 @@ const ConnectWallet = ({ setUserAddress }) => {
                         setUserAddress(accounts[0]);
                     }
                 } catch (error) {
-                    console.error("检查钱包失败", error);
+                    console.error("Failed to check wallet", error);
                 }
             }
         };
@@ -49,7 +49,7 @@ const ConnectWallet = ({ setUserAddress }) => {
     // 连接钱包
     const connectWallet = async () => {
         if (!window.ethereum) {
-            alert("❌ 请安装 MetaMask 以继续！");
+            alert("❌ Install MetaMask to continue！");
             return;
         }
 
@@ -59,10 +59,10 @@ const ConnectWallet = ({ setUserAddress }) => {
             setUserAddress(accounts[0]);
         } catch (error) {
             if (error.code === 4001) {
-                alert("⚠️ 用户拒绝连接 MetaMask");
+                alert("⚠️ The user declined the MetaMask connection");
             } else {
-                console.error("连接 MetaMask 失败:", error);
-                alert("❌ 连接钱包失败，请检查 MetaMask 或刷新页面重试！");
+                console.error("Failed to connect MetaMask:", error);
+                alert("❌ Failed to connect wallet. Please check MetaMask or refresh the page and try again！");
             }
         }
     };
@@ -70,7 +70,7 @@ const ConnectWallet = ({ setUserAddress }) => {
     return (
         <div>
             <button onClick={connectWallet}>
-                {account ? `✅ 已连接: ${account.substring(0, 6)}...${account.slice(-4)}` : "🔗 连接 MetaMask"}
+                {account ? `✅ Connected: ${account.substring(0, 6)}...${account.slice(-4)}` : "🔗 Connect MetaMask"}
             </button>
         </div>
     );

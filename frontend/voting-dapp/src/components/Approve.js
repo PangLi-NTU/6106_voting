@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { BrowserProvider, Contract, parseUnits } from "ethers"; // ✅ 适配 ethers v6
+import { BrowserProvider, Contract, parseUnits } from "ethers"; // 适配 ethers v6
 import ERC20ABI from "../contracts/ERC20ABI.json";
-import config from "../config"; // ✅ 从 config.js 读取环境变量
+import config from "../config"; // 从 config.js 读取环境变量
 
 const Approve = ({ userAddress }) => {
     const [amount, setAmount] = useState("20");
@@ -11,10 +11,10 @@ const Approve = ({ userAddress }) => {
 
     const approve = async () => {
         if (!window.ethereum) {
-            return alert("❌ 请安装 MetaMask 以继续！");
+            return alert("❌ Please install MetaMask to continue！");
         }
         if (!userAddress) {
-            return alert("⚠️ 请先连接 MetaMask");
+            return alert("⚠️ Please connect to MetaMask first");
         }
 
         try {
@@ -24,20 +24,20 @@ const Approve = ({ userAddress }) => {
 
             // 解析输入金额
             const parsedAmount = parseUnits(amount, 18);
-            if (parsedAmount.lte(0)) return alert("❌ 请输入有效的批准金额！");
+            if (parsedAmount.lte(0)) return alert("❌ Please enter a valid approval amount！");
 
             // 执行 approve 交易
             const tx = await tokenContract.approve(votingAddress, parsedAmount);
             await tx.wait();
 
-            alert(`🎉 成功批准 ${amount} 代币用于投票`);
+            alert(`🎉 Successfully approved ${amount} tokens for voting`);
             setAmount(""); // 清空输入框
         } catch (error) {
-            console.error("❌ 批准失败", error);
+            console.error("❌ Approval failed", error);
             if (error.code === "ACTION_REJECTED") {
-                alert("⚠️ 交易被用户拒绝");
+                alert("⚠️ Transaction rejected by the user");
             } else {
-                alert("❌ 交易失败，请检查钱包余额或 Gas 费用");
+                alert("❌ Transaction failed. Please check your wallet balance or gas fees");
             }
         }
     };
@@ -48,9 +48,9 @@ const Approve = ({ userAddress }) => {
                 type="text"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="输入批准金额"
+                placeholder="Enter approval amount"
             />
-            <button onClick={approve}>✅ 批准投票</button>
+            <button onClick={approve}>✅ Approve voting</button>
         </div>
     );
 };

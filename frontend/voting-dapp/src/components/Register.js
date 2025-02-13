@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import VotingSystemABI from "../contracts/VotingSystemABI.json";
 
-const votingContractAddress = process.env.REACT_APP_VOTING_CONTRACT_ADDRESS;
+const votingContractAddress = process.env.REACT_APP_VOTING_CONTRACT_ADDRESS_1;
 
 const Register = ({ userAddress }) => {
     const [isRegistered, setIsRegistered] = useState(false);
@@ -16,10 +16,10 @@ const Register = ({ userAddress }) => {
                 const signer = await provider.getSigner();
                 const contract = new ethers.Contract(votingContractAddress, VotingSystemABI, signer);
 
-                const alreadyRegistered = await contract.isRegistered(userAddress); // 假设合约有 `isRegistered` 方法
+                const alreadyRegistered = await contract.isRegistered(userAddress); 
                 setIsRegistered(alreadyRegistered);
             } catch (error) {
-                console.error("检查注册状态失败", error);
+                console.error("Failed to check registration status", error);
             }
         };
         checkRegistration();
@@ -27,8 +27,8 @@ const Register = ({ userAddress }) => {
 
     // 处理注册
     const register = async () => {
-        if (!window.ethereum) return alert("请安装 MetaMask 以继续！");
-        if (!userAddress) return alert("请先连接 MetaMask");
+        if (!window.ethereum) return alert("Please install MetaMask to continue！");
+        if (!userAddress) return alert("Please connect to MetaMask first");
 
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
@@ -37,20 +37,20 @@ const Register = ({ userAddress }) => {
         try {
             const tx = await contract.register();
             await tx.wait();
-            alert("注册成功！已领取 20 ERC-20 代币");
+            alert("Registration successful! 20 ERC-20 tokens have been claimed");
             setIsRegistered(true);
         } catch (error) {
-            console.error("注册失败", error);
-            alert("⚠️ 注册失败，请检查钱包是否有足够的 Gas 费");
+            console.error("Registration failed", error);
+            alert("⚠️ Registration failed. Please check if your wallet has enough gas fees");
         }
     };
 
     return (
         <div>
             {isRegistered ? (
-                <p>你已注册，无需重复操作！</p>
+                <p>You are already registered. No further action is needed！</p>
             ) : (
-                <button onClick={register}>📝 注册并领取 20 代币</button>
+                <button onClick={register}>📝 Register and claim 20 tokens</button>
             )}
         </div>
     );
